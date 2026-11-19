@@ -1,0 +1,13 @@
+Simulator grade - 2026-11-20 01:51. Real .ino compiled and run in sim/xpulse_sim.py. Robot: 450 g, axle->sensors 18.5 cm, sensors 1 cm, wheels 12.5 cm apart, tape 1.5 cm. Motor/fan values estimated.
+
+Sketch: line_follower_v2.ino   tape 1.5 cm   changed settings: none
+track              result            lap   done  length       avg       top  under 20 s?
+aum_track          FINISH          9.22s  93.1%   11.4m   1.23m/s   2.18m/s  yes
+
+Finished 1/1 tracks -> grade A.  Total lap time 9.22 s.  Avg speed 1.23 m/s -> a 20 s lap fits a course up to 24.7 m.
+
+Sketch: line_follower.ino   tape 1.5 cm   changed settings: none
+track              result            lap   done  length       avg       top  under 20 s?
+aum_track          FINISH         16.00s  84.1%   11.8m   0.74m/s   0.88m/s  yes
+
+Finished 1/1 tracks -> grade A.  Total lap time 16.00 s.  Avg speed 0.74 m/s -> a 20 s lap fits a course up to 14.8 m.

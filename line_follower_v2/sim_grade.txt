@@ -1,0 +1,11 @@
+Simulator grade - 2026-11-20 02:09. Real .ino compiled and run in sim/xpulse_sim.py (MicroStart START pressed at 2 s). Robot: 450 g, axle->sensors 18.5 cm, sensors 1 cm, wheels 12.5 cm apart, tape 1.5 cm. Motor/fan values estimated.
+## DIP mode COMP
+aum_track          FINISH          9.31s  93.3%   11.4m   1.23m/s   1.99m/s  yes
+## DIP mode TEST
+aum_track          FINISH         19.76s  97.5%   11.0m   0.56m/s   0.60m/s  yes
+## DIP mode SAFE
+aum_track          FINISH         10.96s  95.5%   11.1m   1.01m/s   1.73m/s  yes
+## DIP mode FAST
+aum_track          FINISH          9.47s  90.7%   11.6m   1.23m/s   2.52m/s  yes
+## original line_follower.ino
+aum_track          FINISH         16.00s  84.1%   11.8m   0.74m/s   0.88m/s  yes

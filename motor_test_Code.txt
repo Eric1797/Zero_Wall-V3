@@ -1,0 +1,24 @@
+#include <xmotion.h>
+
+void setup() {
+  // Blink both onboard user LEDs to confirm the code has started
+  delay(200);
+}
+
+void loop() {
+  // 1. Test BOTH motors Forward at 30% speed for 1 second
+  xmotion.Forward(30, 1000);
+  xmotion.StopMotors(1000); // Pause for 1 second
+
+  // 2. Test BOTH motors Backward at 30% speed for 1 second
+  xmotion.Backward(30, 1000);
+  xmotion.StopMotors(1000); // Pause for 1 second
+
+  // 3. Test LEFT motor only (ArcTurn: Left = 30%, Right = 0%)
+  xmotion.ArcTurn(30, 0, 1000);
+  xmotion.StopMotors(1000); // Pause for 1 second
+
+  // 4. Test RIGHT motor only (ArcTurn: Left = 0%, Right = 30%)
+  xmotion.ArcTurn(0, 30, 1000);
+  xmotion.StopMotors(2000); // Longer pause before repeating
+}
