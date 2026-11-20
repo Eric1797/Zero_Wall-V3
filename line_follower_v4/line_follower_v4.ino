@@ -45,6 +45,8 @@
  *   DIP1 + DIP3 ON     6 blinks TECHNICAL    for a hard track: 90 degree corners, tight turns.
  *                                            Brakes earlier, lower corner speed, pivots at once
  *                                            when the line disappears.
+ *   DIP1 + DIP2 ON     7 blinks COMP, NO MICROSTART  full speed, starts by itself 1 s after the
+ *                                            blinks (no remote needed). Lift it to stop it.
  *   any other mix      = TEST (safest)
  *
  * TUNING on the real robot (lift it first):
@@ -148,7 +150,7 @@ bool running    = false;
 bool stopped    = false;
 uint32_t runStartUs = 0, loopCount = 0;  // measured control-loop rate, printed after STOP   // emergency stop latched (until power-cycle)
 uint8_t startLevel = LOW;  // debounced MicroStart level
-enum Mode { M_COMP = 1, M_TEST, M_SAFE, M_SENSOR, M_FAST, M_TECH };
+enum Mode { M_COMP = 1, M_TEST, M_SAFE, M_SENSOR, M_FAST, M_TECH, M_AUTO };
 uint8_t mode = M_COMP;
 float speedScale = 1.0;
 uint32_t lastUs = 0;
@@ -212,6 +214,7 @@ void setup() {
   else if (!d1 && !d2 && d3) { mode = M_SENSOR; speedScale = 0; }
   else if (!d1 && d2 && d3)  { mode = M_FAST;   speedScale = FAST_SCALE; }
   else if (d1 && !d2 && d3)  { mode = M_TECH;   speedScale = TECH_SCALE; }
+  else if (d1 && d2 && !d3)  { mode = M_AUTO;   speedScale = 1.0; }   // COMP without MicroStart
   else                       { mode = M_TEST;   speedScale = TEST_SCALE; }
   for (uint8_t k = 0; k < mode; k++) {       // blink the mode number
     ledL(HIGH); ledR(HIGH); delay(150);
@@ -219,7 +222,7 @@ void setup() {
   }
 
   startLevel = digitalRead(PIN_START);
-  if (!START_WITH_MODULE && mode != M_SENSOR) {
+  if ((!START_WITH_MODULE || mode == M_AUTO) && mode != M_SENSOR) {
     delay(1000);  // time to put the robot down
     running = true;
   }

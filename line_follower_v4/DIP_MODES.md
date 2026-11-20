@@ -16,6 +16,7 @@ After power-on, both LEDs blink the mode number.
 | OFF | OFF | ON | 4 | **SENSOR CHECK** | Motors never run. LEDs show whether the line is on the left or right. The Serial Monitor (115200 baud) prints all 16 sensors and the MicroStart signal on A0. Put the robot on the line and check every sensor. |
 | ON | OFF | ON | 6 | **TECHNICAL** | For a hard track: 90 degree corners, tight turns. Brakes earlier, lower corner speed, pivots as soon as the line disappears. |
 | OFF | ON | ON | 5 | **FAST** | 110% speed. Only with a fresh battery, clean tyres and the fan running. |
+| ON | ON | OFF | 7 | **COMP, NO MICROSTART** | Full competition speed, but starts by itself about 1 s after the 7 blinks. No remote needed. Use it when the MicroStart is missing or not working. To stop: lift the robot and switch it off. |
 | any other mix | | | 2 | TEST | Safest fallback. |
 
 Steering strength scales with the mode's speed, so the slow modes do not jerk from side to side.
