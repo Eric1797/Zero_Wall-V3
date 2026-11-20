@@ -2,7 +2,13 @@
  * JSumo XPulse - Line Follower v2  (built on line_follower.ino)
  * Board: Tools > Board > "Arduino Leonardo"
  * Serial Monitor: 115200 baud
- *
+ * 
+ 
+ 
+ ################################################# / Eric / ###############################################
+
+
+
  * Same pins, mux reading, sensor order and setMotors() as line_follower.ino:
  *   Front sensors: ch 14 = far LEFT ... ch 7 = centre ... ch 0 = far RIGHT, LOW = black tape.
  * Kept from line_follower.ino: PID with filtered derivative, integral with anti-windup that is
@@ -115,7 +121,8 @@ float hintS     = 99;      // seconds since that hint
 float straightS = 0;       // how long the robot has looked like it is on a straight
 float turnRatio = 0;       // steering / speed before a crossing (= how tight it was turning)
 bool running    = false;
-bool stopped    = false;   // emergency stop latched (until power-cycle)
+bool stopped    = false;
+uint32_t runStartUs = 0, loopCount = 0;  // measured control-loop rate, printed after STOP   // emergency stop latched (until power-cycle)
 uint8_t startLevel = LOW;  // debounced MicroStart level
 enum Mode { M_COMP = 1, M_TEST, M_SAFE, M_SENSOR, M_FAST };
 uint8_t mode = M_COMP;
@@ -203,13 +210,21 @@ void serviceStart() {
       running = true;
       lastError = dFilt = integral = speed = vEst = 0;
       hintS = 99;
-      Serial.println(F("START"));
+      runStartUs = micros();
+      loopCount = 0;                         // no Serial while driving: it can block on USB
     }
   } else {
     stopped = true;                          // only a power-cycle clears this
     running = false;
-    setMotors(0, 0);
-    Serial.println(F("EMERGENCY STOP"));
+    setMotors(0, 0);                         // motors off first, then report
+    if (Serial) {
+      Serial.println(F("EMERGENCY STOP"));
+      if (loopCount) {
+        Serial.print(F("control loop: "));
+        Serial.print(loopCount * 1e6f / (micros() - runStartUs), 0);
+        Serial.println(F(" Hz"));
+      }
+    }
   }
 }
 
@@ -257,6 +272,7 @@ void loop() {
   selectMuxChannel(15);
   bool backOn = (digitalRead(PIN_MUX_SIG) == LOW);     // bottom centre sensor (ch 15)
 
+  loopCount++;
   uint32_t nowUs = micros();
   float dt = (nowUs - lastUs) * 1e-6f;
   lastUs = nowUs;

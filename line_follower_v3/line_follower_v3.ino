@@ -82,31 +82,31 @@ const float   TECH_SLOW   = 1.6;    // DIP1+DIP3: slows down this much harder fo
 const float   TECH_MIN    = 0.75;   // DIP1+DIP3: tightest-curve speed x 75%
 const int     MIN_MOVE_PWM = 45;    // never plan less than this (motors stall below it)
 
-const int   MAX_SPEED     = 159;    // 0-255, speed on straights
-const int   MIN_SPEED     = 114;     // 0-255, planned speed in the tightest curves
+const int   MAX_SPEED     = 194;    // 0-255, speed on straights
+const int   MIN_SPEED     = 113;     // 0-255, planned speed in the tightest curves
 const float SLOW_PER_ERR  = 20.2574;   // PWM taken off MAX_SPEED per sensor of error
-const float SLOW_PER_RATE = 0.2064;   // PWM taken off per (sensor/second) of line movement
-const float ACCEL_PER_S   = 1067.7998;  // how fast the planned speed may rise (PWM per second)
+const float SLOW_PER_RATE = 0.1934;   // PWM taken off per (sensor/second) of line movement
+const float ACCEL_PER_S   = 1215.325;  // how fast the planned speed may rise (PWM per second)
 const float BRAKE_GAIN    = 1.4014;    // reverse power per PWM of over-speed
-const int   BRAKE_MAX     = 236;    // most reverse power used for braking
+const int   BRAKE_MAX     = 255;    // most reverse power used for braking
 const float SPEED_TAU_S   = 0.0974;   // robot speed time constant, for the speed estimate
 const float KP            = 37.8207;   // PWM per sensor of error
-const float KD            = 2.6719;    // PWM per (error/second), on a filtered rate
+const float KD            = 2.8225;    // PWM per (error/second), on a filtered rate
 const float KI            = 0.7032;    // integral gain (per error-second); 0 = PD only
 const float INTEGRAL_MAX  = 3.3837;    // anti-windup limit on the error-seconds sum
 const float D_FILTER_S    = 0.0061;  // derivative low-pass time constant (seconds)
-const int   PIVOT_MAX     = 198;    // how far the inner wheel may reverse in tight turns
-const int   SEARCH_SPEED  = 102;    // pivot speed when the line is lost
-const float GAP_S         = 0.0511;  // line gaps shorter than this are driven straight through
+const int   PIVOT_MAX     = 231;    // how far the inner wheel may reverse in tight turns
+const int   SEARCH_SPEED  = 76;    // pivot speed when the line is lost
+const float GAP_S         = 0.0536;  // line gaps shorter than this are driven straight through
 const int   WIDE_W        = 5;       // a piece this many sensors wide = crossing / sharp corner
 const float CROSS_CURVE   = 0.5678;    // over a crossing: 0 = drive straight, 1 = keep the curve it had
 const float HINT_S        = 0.3237;   // how long a "tape spread left/right" hint is trusted (s)
 const int   BOOST_SPEED   = 194;    // 0-255, speed on confirmed straights
-const float STRAIGHT_ERR  = 1.0676;    // |error| below this (sensors) counts as "on a straight"
-const float STRAIGHT_RATE = 6.6795;    // ...and the line moves slower than this (sensors/second)
-const float STRAIGHT_CONFIRM_S = 0.1052;  // must hold that long before straight mode
-const float KP_STRAIGHT   = 0.4112;    // KP multiplier in straight mode (soft = no wobble)
-const float KD_STRAIGHT   = 1.208;    // KD multiplier in straight mode (damps small swings)
+const float STRAIGHT_ERR  = 1.3987;    // |error| below this (sensors) counts as "on a straight"
+const float STRAIGHT_RATE = 7.5186;    // ...and the line moves slower than this (sensors/second)
+const float STRAIGHT_CONFIRM_S = 0.0868;  // must hold that long before straight mode
+const float KP_STRAIGHT   = 0.4281;    // KP multiplier in straight mode (soft = no wobble)
+const float KD_STRAIGHT   = 1.185;    // KD multiplier in straight mode (damps small swings)
 
 // ---------- State ----------
 float lastError = 0;
@@ -121,7 +121,8 @@ float hintS     = 99;      // seconds since that hint
 float straightS = 0;       // how long the robot has looked like it is on a straight
 float turnRatio = 0;       // steering / speed before a crossing (= how tight it was turning)
 bool running    = false;
-bool stopped    = false;   // emergency stop latched (until power-cycle)
+bool stopped    = false;
+uint32_t runStartUs = 0, loopCount = 0;  // measured control-loop rate, printed after STOP   // emergency stop latched (until power-cycle)
 uint8_t startLevel = LOW;  // debounced MicroStart level
 enum Mode { M_COMP = 1, M_TEST, M_SAFE, M_SENSOR, M_FAST, M_TECH };
 uint8_t mode = M_COMP;
@@ -210,13 +211,21 @@ void serviceStart() {
       running = true;
       lastError = dFilt = integral = speed = vEst = 0;
       hintS = 99;
-      Serial.println(F("START"));
+      runStartUs = micros();
+      loopCount = 0;                         // no Serial while driving: it can block on USB
     }
   } else {
     stopped = true;                          // only a power-cycle clears this
     running = false;
-    setMotors(0, 0);
-    Serial.println(F("EMERGENCY STOP"));
+    setMotors(0, 0);                         // motors off first, then report
+    if (Serial) {
+      Serial.println(F("EMERGENCY STOP"));
+      if (loopCount) {
+        Serial.print(F("control loop: "));
+        Serial.print(loopCount * 1e6f / (micros() - runStartUs), 0);
+        Serial.println(F(" Hz"));
+      }
+    }
   }
 }
 
@@ -264,6 +273,7 @@ void loop() {
   selectMuxChannel(15);
   bool backOn = (digitalRead(PIN_MUX_SIG) == LOW);     // bottom centre sensor (ch 15)
 
+  loopCount++;
   uint32_t nowUs = micros();
   float dt = (nowUs - lastUs) * 1e-6f;
   lastUs = nowUs;
