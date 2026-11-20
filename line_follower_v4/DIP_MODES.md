@@ -32,14 +32,16 @@ Sim results on the competition track (1.5 cm tape):
 
 ## MicroStart start module (A0)
 
-Setting: `START_WITH_MODULE = 1` (default).
+Setting: `START_WITH_MODULE = 0` (default). The robot starts by itself; the module is the emergency stop.
 
-1. Switch the robot on and check the mode blinks.
-2. Place it on the start line.
-3. Press **START** on the remote. A0 goes LOW to HIGH and the run starts.
-4. Press **STOP** at any time. This is an **emergency stop**: the motors switch off at once, both LEDs blink, and the robot stays stopped until you **cut the power** (battery **and** USB). The module also needs a power cycle after STOP.
+1. Switch the robot on. Press **START** on the remote (module blue LED on, A0 goes HIGH). This arms the stop.
+2. Place the robot on the line. It drives by itself about 1 s after the mode blinks end.
+3. Press **STOP** at any time. A0 goes HIGH to LOW: **emergency stop**. The motors switch off at once, both LEDs blink, and the robot stays stopped until you **cut the power** (battery **and** USB). The module also needs a power cycle after STOP.
 
-If the module is not fitted, or you want the robot to start by itself, set `START_WITH_MODULE = 0`. The robot then starts 1 s after power-on, and STOP still works once START has been pressed.
+If you skip START, STOP does nothing (A0 never went HIGH). With no module fitted the robot still runs.
+DIP1 + DIP2 (7 blinks) is now the same as COMPETITION.
+
+If the race rules say the module must START the run, set `START_WITH_MODULE = 1`: the robot then waits for remote START (A0 LOW to HIGH).
 
 The remote's buttons must be recorded into the module once. See `../microstart/startstop_instructions.md`.
 

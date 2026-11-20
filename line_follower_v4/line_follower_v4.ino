@@ -24,9 +24,9 @@
  *  4. Inner wheel may reverse (up to PIVOT_MAX) for tight corners.
  *  5. Short gaps in the line near the centre are driven straight through.
  *  6. MicroStart start module on A0 (see microstart/startstop_instructions.md):
- *     remote START (A0 LOW->HIGH) starts the run, remote STOP (A0 HIGH->LOW) is an EMERGENCY
- *     STOP: motors off and latched until the robot is power-cycled. START_WITH_MODULE = 0 starts
- *     1 s after power-on instead (STOP still works once START was pressed).
+ *     the robot starts by itself 1 s after the mode blinks. Any A0 HIGH->LOW edge (remote STOP
+ *     after START) is an EMERGENCY STOP: motors off and latched until the robot is power-cycled.
+ *     START_WITH_MODULE = 1 instead waits for remote START (A0 LOW->HIGH) to start the run.
  *  7. Straight mode: when the line has stayed near the centre (and the bottom sensor 15 sees it)
  *     for STRAIGHT_CONFIRM_S, steering goes soft (KP x KP_STRAIGHT, KD x KD_STRAIGHT) so it does
  *     not wobble, and it may speed up to BOOST_SPEED. Any real error drops back at once to full
@@ -99,7 +99,7 @@ inline void dirR(bool v) { digitalWrite(PIN_R_DIR, v); }
 const uint8_t LEFT_FWD    = HIGH;   // DIR level that drives left motor forward
 const uint8_t RIGHT_FWD   = HIGH;   // DIR level that drives right motor forward
 const int8_t  STEER_SIGN  = 1;      // flip to -1 if robot turns away from line
-const int     START_WITH_MODULE = 1; // 1 = run starts on remote START; 0 = start 1 s after power-on
+const int     START_WITH_MODULE = 0; // 0 = start 1 s after the mode blinks; 1 = wait for remote START. A0 HIGH->LOW always = STOP
 const float   TEST_SCALE  = 0.10;   // DIP1: speed x 10%
 const float   SAFE_SCALE  = 0.70;   // DIP2: speed x 70%
 const float   FAST_SCALE  = 1.10;   // DIP2+DIP3: speed x 110%
